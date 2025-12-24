@@ -1,4 +1,9 @@
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.text.NumberFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Scanner;
 
 public class Main {
@@ -31,6 +36,10 @@ public class Main {
         //Display ticket prices;
         System.out.println("Total Price: " + currency.format(calcTotalPrice(movieChoice, priceList, tickets)));
 
+        //Create ticket receipt file
+
+        writeToFile(prepareReceipt(movieList[movieChoice], priceList[movieChoice], tickets, calcTotalPrice(movieChoice, priceList, tickets), currency));
+
         //Display confirmation message
         displayMessage("Thank you for your purchase. Enjoy the movie!");
 
@@ -44,7 +53,7 @@ public class Main {
     }
 
     //SHOW MOVIE SELECTION
-    public static String showMovieList(String[] movies, double[] prices, NumberFormat currency ) {
+    public static String showMovieList(String[] movies, double[] prices, NumberFormat currency) {
         StringBuilder movieString = new StringBuilder("Available Movies:\n");
         movieString.append("---------------------------------------------\n");
         for (int i = 0; i < movies.length; i++) {
@@ -61,13 +70,13 @@ public class Main {
     }
 
     //GET MOVIE CHOICE
-    public static int getMovieChoice(Scanner scanner){
+    public static int getMovieChoice(Scanner scanner) {
 
-        while(true) {
+        while (true) {
             try {
                 System.out.print("Select a movie by entering the corresponding number(1 - 5): ");
                 int choice = Integer.parseInt(scanner.nextLine());
-                if(choice < 1 || choice > 5){
+                if (choice < 1 || choice > 5) {
                     throw new IllegalArgumentException("Enter a number between 1 and 5.");
                 }
                 return choice - 1;
@@ -79,8 +88,8 @@ public class Main {
         }
     }
 
-    public static int getTicketCount(Scanner scanner){
-        while(true) {
+    public static int getTicketCount(Scanner scanner) {
+        while (true) {
             try {
                 System.out.print("Enter number of required tickets: ");
                 return Integer.parseInt(scanner.nextLine());
@@ -93,7 +102,43 @@ public class Main {
     }
 
     //CALCULATE TOTAL TICKET PRICE
-    public static double calcTotalPrice(int movieChoice, double[] prices, int tickets ){
+    public static double calcTotalPrice(int movieChoice, double[] prices, int tickets) {
         return prices[movieChoice] * tickets;
+    }
+
+    public static String prepareReceipt(String movie, double price, int tickets, double totalPrice, NumberFormat currency) {
+        LocalDate date = LocalDate.now();
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+        return String.format("""
+                        ============================
+                        Cinema Ticket %s
+                        ============================
+                        Movie: %s
+                        Ticket Price: %s
+                        Number of Tickets: %d
+                        Total Price: %s
+                        """,
+                date.format(dateFormatter),
+                movie,
+                currency.format(price),
+                tickets,
+                currency.format(totalPrice)
+        );
+
+    }
+
+    public static void writeToFile(String receipt) {
+        String filePath = "C:\\temp\\cinema-ticket.txt";
+
+        try (FileWriter writer = new FileWriter(filePath)) {
+            writer.write(receipt);
+        } catch (FileNotFoundException e) {
+            System.out.println("Cannot locate file " + filePath);
+        } catch (IOException e) {
+            System.out.println("I/O error: " + e.getMessage());
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
     }
 }
